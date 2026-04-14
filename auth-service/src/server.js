@@ -26,7 +26,8 @@ app.use(express.json());
 connectDB();
 
 // Routes
-app.use("/api/auth", authRoutes);
+// app.use("/api/auth", authRoutes);
+app.use("/", authRoutes);
 
 // Test route
 app.get("/", (req, res) => {
