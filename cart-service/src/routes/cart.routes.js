@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect, authorize } = require("../middleware/auth.middleware");
+
 
 const {
   getCart,
@@ -9,6 +9,7 @@ const {
   removeItem,
   clearCart,
 } = require("../controllers/cart.controller");
+const { protect } = require("../../../common");
 
 // 🛒 ROUTES
 router.get("/", protect, getCart);
