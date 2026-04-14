@@ -27,7 +27,8 @@ app.use((req, res, next) => {
 connectDB();
 
 // Routes
-app.use("/api/products", productRoutes);
+// app.use("/api/products", productRoutes);
+app.use("/", productRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Product service running on ${process.env.PORT}`);
