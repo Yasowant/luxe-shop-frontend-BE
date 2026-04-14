@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 
-exports.protect = (req, res, next) => {
+const protect = (req, res, next) => {
   let token = req.headers.authorization;
 
-  if (!token) return res.status(401).json({ msg: "No token" });
+  if (!token) {
+    return res.status(401).json({ msg: "No token" });
+  }
 
   if (token.startsWith("Bearer ")) {
     token = token.split(" ")[1];
@@ -11,14 +13,19 @@ exports.protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
+
+    // 🔥 pass user to services
+    req.headers["x-user"] = JSON.stringify(decoded);
+
     next();
-  } catch {
+  } catch (err) {
     return res.status(401).json({ msg: "Invalid token" });
   }
 };
 
-exports.authorize = (...roles) => {
+const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ msg: "Access denied" });
@@ -26,3 +33,5 @@ exports.authorize = (...roles) => {
     next();
   };
 };
+
+module.exports = { protect, authorize };

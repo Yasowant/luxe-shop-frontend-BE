@@ -1,5 +1,6 @@
 const router = require("express").Router();
 
+const { protect, authorize } = require("../../../common");
 const {
   createProduct,
   getProducts,
@@ -10,7 +11,7 @@ const {
   restoreStock,
 } = require("../controllers/product.controller");
 
-const { protect, authorize } = require("../middleware/auth.middleware");
+// const { protect, authorize } = require("../middleware/auth.middleware");
 const upload = require("../middleware/upload.middleware");
 
 // ✅ ADMIN ONLY

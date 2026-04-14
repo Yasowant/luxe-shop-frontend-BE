@@ -1,5 +1,6 @@
 const router = require("express").Router();
 
+const { protect } = require("../../../common");
 const {
   createOrder,
   getMyOrders,
@@ -7,7 +8,7 @@ const {
   cancelOrder,
 } = require("../controllers/order.controller");
 
-const { protect } = require("../middleware/auth.middleware");
+// const { protect } = require("../middleware/auth.middleware");
 
 // CREATE ORDER
 router.post("/", protect, createOrder);
