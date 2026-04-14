@@ -1,0 +1,21 @@
+{
+  "name": "ecommerce-microservices",
+  "version": "1.0.0",
+  "description": "Node.js microservices-based e-commerce backend with API Gateway and shared common package",
+  "private": true,
+  "workspaces": [
+    "auth-service",
+    "cart-service",
+    "order-service",
+    "product-service",
+    "api-gateway",
+    "common"
+  ],
+  "scripts": {
+    "start:auth": "npm start --workspace=auth-service",
+    "start:cart": "npm start --workspace=cart-service",
+    "start:order": "npm start --workspace=order-service",
+    "start:product": "npm start --workspace=product-service",
+    "start:gateway": "npm start --workspace=api-gateway"
+  }
+}
