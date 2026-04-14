@@ -14,12 +14,14 @@ app.use((req, res, next) => {
 });
 
 // Middleware
+// ✅ CORS (IMPORTANT for Vercel frontend)
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: ["http://localhost:8080", "https://luxe-shop-frontend.vercel.app"],
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 // DB

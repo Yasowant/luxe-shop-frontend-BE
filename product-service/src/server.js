@@ -7,12 +7,14 @@ const productRoutes = require("./routes/product.routes");
 
 const app = express();
 
+// ✅ CORS (IMPORTANT for Vercel frontend)
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: ["http://localhost:8080", "https://luxe-shop-frontend.vercel.app"],
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 // ✅ FIXED LOGGER
