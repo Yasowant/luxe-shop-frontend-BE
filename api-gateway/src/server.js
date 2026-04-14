@@ -56,6 +56,7 @@
 // app.listen(process.env.PORT || 4000, () => {
 //   console.log(`🚀 Gateway running on ${process.env.PORT}`);
 // });
+
 require("dotenv").config();
 
 const express = require("express");
@@ -79,101 +80,51 @@ app.use((req, res, next) => {
   next();
 });
 
-// 🔥 AUTH SERVICE
-app.use(
-  "/api/auth",
+// 🔥 COMMON PROXY FUNCTION
+const createProxy = (name, target) =>
   createProxyMiddleware({
-    target: process.env.AUTH_SERVICE_URL,
+    target,
     changeOrigin: true,
 
-    pathRewrite: {
-      "^/api/auth": "/api/auth", // ✅ PRESERVE PATH
-    },
-
+    // 🔍 DEBUG: Request going OUT
     onProxyReq: (proxyReq, req) => {
-      console.log(
-        `➡️ [AUTH] ${req.method} ${req.originalUrl} → ${process.env.AUTH_SERVICE_URL}`,
-      );
+      console.log(`➡️ [${name}] ${req.method} → ${target}${req.originalUrl}`);
     },
 
+    // 🔍 DEBUG: Response coming BACK
     onProxyRes: (proxyRes, req) => {
-      console.log(`✅ [AUTH] ${proxyRes.statusCode} ← ${req.originalUrl}`);
+      console.log(`✅ [${name}] ${proxyRes.statusCode} ← ${req.originalUrl}`);
     },
 
+    // ❌ ERROR HANDLER
     onError: (err, req, res) => {
-      console.error("❌ [AUTH ERROR]:", err.message);
-      res.status(500).json({ error: "Auth service error" });
+      console.error(`❌ [${name} ERROR]:`, err.message);
+      res.status(500).json({
+        message: `${name} service error`,
+        error: err.message,
+      });
     },
-  }),
-);
+  });
 
-// 📦 PRODUCT SERVICE
+// ✅ AUTH SERVICE
+app.use("/api/auth", createProxy("AUTH", process.env.AUTH_SERVICE_URL));
+
+// ✅ PRODUCT SERVICE
 app.use(
   "/api/products",
-  createProxyMiddleware({
-    target: process.env.PRODUCT_SERVICE_URL,
-    changeOrigin: true,
-
-    pathRewrite: {
-      "^/api/products": "/api/products",
-    },
-
-    onProxyReq: (proxyReq, req) => {
-      console.log(`➡️ [PRODUCT] ${req.method} ${req.originalUrl}`);
-    },
-
-    onProxyRes: (proxyRes, req) => {
-      console.log(`✅ [PRODUCT] ${proxyRes.statusCode}`);
-    },
-  }),
+  createProxy("PRODUCT", process.env.PRODUCT_SERVICE_URL),
 );
 
-// 📑 ORDER SERVICE
-app.use(
-  "/api/orders",
-  createProxyMiddleware({
-    target: process.env.ORDER_SERVICE_URL,
-    changeOrigin: true,
+// ✅ ORDER SERVICE
+app.use("/api/orders", createProxy("ORDER", process.env.ORDER_SERVICE_URL));
 
-    pathRewrite: {
-      "^/api/orders": "/api/orders",
-    },
-
-    onProxyReq: (proxyReq, req) => {
-      console.log(`➡️ [ORDER] ${req.method} ${req.originalUrl}`);
-    },
-
-    onProxyRes: (proxyRes, req) => {
-      console.log(`✅ [ORDER] ${proxyRes.statusCode}`);
-    },
-  }),
-);
-
-// 🛒 CART SERVICE
-app.use(
-  "/api/cart",
-  createProxyMiddleware({
-    target: process.env.CART_SERVICE_URL,
-    changeOrigin: true,
-
-    pathRewrite: {
-      "^/api/cart": "/api/cart",
-    },
-
-    onProxyReq: (proxyReq, req) => {
-      console.log(`➡️ [CART] ${req.method} ${req.originalUrl}`);
-    },
-
-    onProxyRes: (proxyRes, req) => {
-      console.log(`✅ [CART] ${proxyRes.statusCode}`);
-    },
-  }),
-);
+// ✅ CART SERVICE
+app.use("/api/cart", createProxy("CART", process.env.CART_SERVICE_URL));
 
 // ✅ HEALTH CHECK
 app.get("/", (req, res) => {
   res.json({
-    message: "🚀 API Gateway Running",
+    status: "🚀 API Gateway Running",
     services: {
       auth: process.env.AUTH_SERVICE_URL,
       product: process.env.PRODUCT_SERVICE_URL,
@@ -183,7 +134,15 @@ app.get("/", (req, res) => {
   });
 });
 
-// ✅ START SERVER
+// ❌ 404 HANDLER
+app.use((req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+    path: req.originalUrl,
+  });
+});
+
+// 🚀 START SERVER
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
