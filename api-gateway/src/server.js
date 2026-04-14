@@ -20,10 +20,18 @@ app.use((req, res, next) => {
 });
 
 // ✅ AUTH SERVICE (FIXED WITH ENV)
+// app.use(
+//   "/api/auth",
+//   createProxyMiddleware({
+//     target: `${process.env.AUTH_SERVICE_URL}/api/auth`,
+//     changeOrigin: true,
+//   }),
+// );
+
 app.use(
   "/api/auth",
   createProxyMiddleware({
-    target: `${process.env.AUTH_SERVICE_URL}/api/auth`,
+    target: process.env.AUTH_SERVICE_URL, // ✅ only base URL
     changeOrigin: true,
   }),
 );
