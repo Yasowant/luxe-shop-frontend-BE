@@ -1,22 +1,28 @@
 {
   "name": "api-gateway",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "API Gateway for ecommerce microservices",
+  "main": "src/server.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "api-gateway",
+    "microservices",
+    "nodejs"
+  ],
+  "author": "Yasowant Nayak",
   "license": "ISC",
-  "description": "",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "common": "*",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "http-proxy": "^1.18.1",
+    "express": "^4.19.2",
     "http-proxy-middleware": "^3.0.5"
   },
   "devDependencies": {
