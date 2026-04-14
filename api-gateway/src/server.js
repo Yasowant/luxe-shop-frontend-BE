@@ -67,80 +67,131 @@ const app = express();
 // ✅ CORS
 app.use(
   cors({
-    origin: "*", // allow all for testing (change later)
+    origin: "*", // change in production
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
 );
 
-// ✅ Request Logger
+// ✅ REQUEST LOGGER
 app.use((req, res, next) => {
   console.log(`🌐 Incoming Request → ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// 🔥 COMMON DEBUG HANDLER
-const proxyOptions = (targetName, targetUrl) => ({
-  target: targetUrl, // ✅ ONLY BASE URL
-  changeOrigin: true,
-
-  onProxyReq: (proxyReq, req, res) => {
-    console.log(
-      `➡️ [${targetName}] Forwarding → ${req.method} ${targetUrl}${req.originalUrl}`,
-    );
-  },
-
-  onProxyRes: (proxyRes, req, res) => {
-    console.log(
-      `✅ [${targetName}] Response → ${proxyRes.statusCode} ${req.originalUrl}`,
-    );
-  },
-
-  onError: (err, req, res) => {
-    console.error(`❌ [${targetName}] Error →`, err.message);
-    res.status(500).json({
-      message: `${targetName} service error`,
-      error: err.message,
-    });
-  },
-});
-
-// ✅ AUTH SERVICE
+// 🔥 AUTH SERVICE
 app.use(
   "/api/auth",
-  createProxyMiddleware(proxyOptions("AUTH", process.env.AUTH_SERVICE_URL)),
+  createProxyMiddleware({
+    target: process.env.AUTH_SERVICE_URL,
+    changeOrigin: true,
+
+    pathRewrite: {
+      "^/api/auth": "/api/auth", // ✅ PRESERVE PATH
+    },
+
+    onProxyReq: (proxyReq, req) => {
+      console.log(
+        `➡️ [AUTH] ${req.method} ${req.originalUrl} → ${process.env.AUTH_SERVICE_URL}`,
+      );
+    },
+
+    onProxyRes: (proxyRes, req) => {
+      console.log(`✅ [AUTH] ${proxyRes.statusCode} ← ${req.originalUrl}`);
+    },
+
+    onError: (err, req, res) => {
+      console.error("❌ [AUTH ERROR]:", err.message);
+      res.status(500).json({ error: "Auth service error" });
+    },
+  }),
 );
 
-// ✅ PRODUCT SERVICE
+// 📦 PRODUCT SERVICE
 app.use(
   "/api/products",
-  createProxyMiddleware(
-    proxyOptions("PRODUCT", process.env.PRODUCT_SERVICE_URL),
-  ),
+  createProxyMiddleware({
+    target: process.env.PRODUCT_SERVICE_URL,
+    changeOrigin: true,
+
+    pathRewrite: {
+      "^/api/products": "/api/products",
+    },
+
+    onProxyReq: (proxyReq, req) => {
+      console.log(`➡️ [PRODUCT] ${req.method} ${req.originalUrl}`);
+    },
+
+    onProxyRes: (proxyRes, req) => {
+      console.log(`✅ [PRODUCT] ${proxyRes.statusCode}`);
+    },
+  }),
 );
 
-// ✅ ORDER SERVICE
+// 📑 ORDER SERVICE
 app.use(
   "/api/orders",
-  createProxyMiddleware(proxyOptions("ORDER", process.env.ORDER_SERVICE_URL)),
+  createProxyMiddleware({
+    target: process.env.ORDER_SERVICE_URL,
+    changeOrigin: true,
+
+    pathRewrite: {
+      "^/api/orders": "/api/orders",
+    },
+
+    onProxyReq: (proxyReq, req) => {
+      console.log(`➡️ [ORDER] ${req.method} ${req.originalUrl}`);
+    },
+
+    onProxyRes: (proxyRes, req) => {
+      console.log(`✅ [ORDER] ${proxyRes.statusCode}`);
+    },
+  }),
 );
 
-// ✅ CART SERVICE
+// 🛒 CART SERVICE
 app.use(
   "/api/cart",
-  createProxyMiddleware(proxyOptions("CART", process.env.CART_SERVICE_URL)),
+  createProxyMiddleware({
+    target: process.env.CART_SERVICE_URL,
+    changeOrigin: true,
+
+    pathRewrite: {
+      "^/api/cart": "/api/cart",
+    },
+
+    onProxyReq: (proxyReq, req) => {
+      console.log(`➡️ [CART] ${req.method} ${req.originalUrl}`);
+    },
+
+    onProxyRes: (proxyRes, req) => {
+      console.log(`✅ [CART] ${proxyRes.statusCode}`);
+    },
+  }),
 );
 
 // ✅ HEALTH CHECK
 app.get("/", (req, res) => {
   res.json({
-    status: "API Gateway running 🚀",
-    services: ["auth", "products", "orders", "cart"],
+    message: "🚀 API Gateway Running",
+    services: {
+      auth: process.env.AUTH_SERVICE_URL,
+      product: process.env.PRODUCT_SERVICE_URL,
+      order: process.env.ORDER_SERVICE_URL,
+      cart: process.env.CART_SERVICE_URL,
+    },
   });
 });
 
 // ✅ START SERVER
 const PORT = process.env.PORT || 4000;
+
 app.listen(PORT, () => {
-  console.log(`🚀 Gateway running on port ${PORT}`);
+  console.log("=================================");
+  console.log(`🚀 Gateway running on PORT ${PORT}`);
+  console.log("AUTH:", process.env.AUTH_SERVICE_URL);
+  console.log("PRODUCT:", process.env.PRODUCT_SERVICE_URL);
+  console.log("ORDER:", process.env.ORDER_SERVICE_URL);
+  console.log("CART:", process.env.CART_SERVICE_URL);
+  console.log("=================================");
 });
